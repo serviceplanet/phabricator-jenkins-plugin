@@ -1,3 +1,25 @@
+This is a Service Planet fork of Uber's Phabricator Jenkins plugin. 
+
+Currently this a stop-gap solution to get the plugin working again after it broke due to Apache HTTPClient being updated in Jenkins.
+
+Running `mvn clean package` will result in a HPI file in the `target/` directory which can be installed in Jenkins.
+
+The following changes were made;
+
+* The project was converted to a standard Maven Jenkins Plugin structure to make it buildable.
+* Apache HTTPClient was updated to version 5.
+* All tests were removed due to various incompatibilities with Apache HTTPClient 5 (HTTP Server was replaced with a new solution), PowerMock being abandoned, etc.
+
+Future work;
+
+* Reinstate the tests.
+* Remove dead functionality such as "uberalls" support.
+* General code clean up and modern Java use (targeting Java 17+).
+* Add functionality to apply a diff without needing arc.
+
+ORIGINAL README
+===============
+
 > **_NOTE:_**  This project is now **archived**.  The original maintainers from Uber have moved on to new opportunities.  
 >
 > If you or your organization is interested in becoming the project owner, please contact us at ospo@uber.com
