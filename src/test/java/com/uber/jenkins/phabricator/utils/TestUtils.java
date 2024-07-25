@@ -37,17 +37,11 @@ import com.uber.jenkins.phabricator.unit.UnitResult;
 import net.sf.json.JSONObject;
 import net.sf.json.groovy.JsonSlurper;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.bootstrap.HttpServer;
-import org.apache.http.localserver.LocalServerTestBase;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpRequestHandler;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.HttpRequestHandler;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.impl.bootstrap.HttpServer;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 
@@ -184,21 +178,13 @@ public class TestUtils {
     public static HttpRequestHandler makeHttpHandler(
             final int statusCode, final String body,
             final List<String> requestBodies) {
-        return new HttpRequestHandler() {
-            @Override
-            public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException,
-                    IOException {
-                response.setStatusCode(statusCode);
-                response.setEntity(new StringEntity(body));
+        return (request, response, context) -> {
+			response.setCode(statusCode);
+			response.setEntity(new StringEntity(body));
 
-                if (request instanceof HttpEntityEnclosingRequest) {
-                    HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
-                    requestBodies.add(EntityUtils.toString(entity));
-                } else {
-                    requestBodies.add("");
-                }
-            }
-        };
+			HttpEntity entity = request.getEntity();
+			requestBodies.add(EntityUtils.toString(entity));
+		};
     }
 
     public static void setEnvironmentVariables(JenkinsRule j, Map<String, String> params) throws IOException {

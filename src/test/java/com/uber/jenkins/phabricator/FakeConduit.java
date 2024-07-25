@@ -23,35 +23,43 @@ package com.uber.jenkins.phabricator;
 import com.uber.jenkins.phabricator.utils.TestUtils;
 
 import net.sf.json.JSONObject;
-
-import org.apache.http.HttpStatus;
-import org.apache.http.impl.bootstrap.HttpServer;
-import org.apache.http.localserver.LocalServerTestBase;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.impl.bootstrap.HttpServer;
+import org.apache.hc.core5.http.impl.bootstrap.ServerBootstrap;
+import org.apache.hc.core5.io.CloseMode;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class FakeConduit extends LocalServerTestBase {
+public final class FakeConduit {
 
     private List<String> requestBodies;
+    
+    private ServerBootstrap serverBootstrap = ServerBootstrap.bootstrap();
+    
+    private HttpServer server;
 
     public FakeConduit(Map<String, JSONObject> responses) throws Exception {
-        this.requestBodies = new ArrayList<String>();
+        this.requestBodies = new ArrayList<>();
         this.setUp();
         for (Map.Entry<String, JSONObject> entry : responses.entrySet()) {
             this.register(entry.getKey(), entry.getValue());
         }
-        this.start();
+        server.start();
     }
 
+    private void setUp() {
+        server = serverBootstrap.create();
+    }
+    
     public void stop() throws Exception {
-        this.shutDown();
+        server.close(CloseMode.IMMEDIATE);
     }
 
     public HttpServer getServer() {
-        return this.server;
+        return server;
     }
 
     public List<String> getRequestBodies() throws UnsupportedEncodingException {
@@ -59,11 +67,11 @@ public class FakeConduit extends LocalServerTestBase {
     }
 
     public String uri() {
-        return TestUtils.getTestServerAddress(this.server);
+        return TestUtils.getTestServerAddress(server);
     }
 
     public void register(String method, JSONObject response) {
-        this.serverBootstrap.registerHandler(
+        this.serverBootstrap.register(
                 "/api/" + method,
                 TestUtils.makeHttpHandler(HttpStatus.SC_OK, response.toString(2), requestBodies)
         );

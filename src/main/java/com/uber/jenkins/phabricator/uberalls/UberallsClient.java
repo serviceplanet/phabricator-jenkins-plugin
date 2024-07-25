@@ -29,18 +29,17 @@ import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import net.sf.json.groovy.JsonSlurper;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.HttpResponseException;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.net.URIBuilder;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -124,28 +123,23 @@ public class UberallsClient {
                 request.addHeader("Content-Type", "application/json");
                 StringEntity requestEntity = new StringEntity(
                         params.toString(),
-                        ContentType.APPLICATION_JSON.toString(),
-                        "UTF-8");
+                        ContentType.APPLICATION_JSON);
                 request.setEntity(requestEntity);
                 CloseableHttpResponse response = client.execute(request);
-                int statusCode = response.getStatusLine().getStatusCode();
+                int statusCode = response.getCode();
 
                 if (statusCode != HttpStatus.SC_OK) {
-                    logger.info(TAG, "Call failed: " + response.getStatusLine());
+                    logger.info(TAG, "Call failed: " + response);
                     return false;
                 }
                 return true;
-            } catch (URISyntaxException e) {
-                e.printStackTrace(logger.getStream());
             } catch (HttpResponseException e) {
                 // e.g. 404, pass
                 logger.info(TAG, "HTTP Response error recording metrics: " + e);
-            } catch (ClientProtocolException e) {
-                e.printStackTrace(logger.getStream());
-            } catch (IOException e) {
+            } catch (URISyntaxException | IOException e) {
                 e.printStackTrace(logger.getStream());
             }
-        }
+		}
 
         return false;
     }
@@ -160,10 +154,10 @@ public class UberallsClient {
             CloseableHttpClient client = getClient();
             HttpGet request = new HttpGet(builder.build().toString());
             CloseableHttpResponse response = client.execute(request);
-            int statusCode = response.getStatusLine().getStatusCode();
+            int statusCode = response.getCode();
 
             if (statusCode != HttpStatus.SC_OK) {
-                logger.info(TAG, "Call failed: " + response.getStatusLine().toString());
+                logger.info(TAG, "Call failed: " + response);
                 return null;
             }
             return EntityUtils.toString(response.getEntity());

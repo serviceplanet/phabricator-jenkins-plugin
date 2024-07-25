@@ -27,8 +27,9 @@ import com.uber.jenkins.phabricator.utils.TestUtils;
 
 import net.sf.json.JSONObject;
 
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.junit.After;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -147,11 +148,11 @@ public abstract class BuildIntegrationTest {
     }
 
     protected void assertConduitRequest(JSONObject expectedRequestParams, String actualRequestBody) throws IOException,
-            ConduitAPIException {
+			ConduitAPIException, ParseException {
         String conduitTestServerAddress = TestUtils.getTestServerAddress(conduit.getServer());
         ConduitAPIClient conduitTestClient = new ConduitAPIClient(conduitTestServerAddress,
                 TestUtils.TEST_CONDUIT_TOKEN);
-        HttpEntityEnclosingRequest request = (HttpEntityEnclosingRequest) conduitTestClient.createRequest("",
+        ClassicHttpRequest request = conduitTestClient.createRequest("",
                 expectedRequestParams);
         String expectedRequestBody = EntityUtils.toString(request.getEntity());
 

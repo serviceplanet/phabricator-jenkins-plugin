@@ -24,16 +24,17 @@ import net.sf.json.JSONObject;
 import net.sf.json.groovy.JsonSlurper;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +43,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,11 +69,11 @@ public class ConduitAPIClient {
      * @throws IOException If there was a problem reading the response
      * @throws ConduitAPIException If there was an error calling conduit
      */
-    public JSONObject perform(String action, JSONObject params) throws IOException, ConduitAPIException {
+    public JSONObject perform(String action, JSONObject params) throws IOException, ConduitAPIException {        
         CloseableHttpClient client = HttpClientBuilder.create().build();
-        HttpUriRequest request = createRequest(action, params);
+        ClassicHttpRequest request = createRequest(action, params);
 
-        HttpResponse response;
+        CloseableHttpResponse response;
         try {
             response = client.execute(request);
         } catch (ClientProtocolException e) {
@@ -79,7 +81,7 @@ public class ConduitAPIClient {
         }
 
         InputStream responseBody = response.getEntity().getContent();
-        Integer responseCode = response.getStatusLine().getStatusCode();
+        int responseCode = response.getCode();
         if (responseCode != HttpStatus.SC_OK) {
             throw new ConduitAPIException(IOUtils.toString(responseBody, Charset.defaultCharset()), responseCode);
         }
@@ -97,27 +99,25 @@ public class ConduitAPIClient {
      * @throws UnsupportedEncodingException when the POST data can't be encoded
      * @throws ConduitAPIException when the conduit URL is misconfigured
      */
-    public HttpUriRequest createRequest(String action, JSONObject params) throws UnsupportedEncodingException,
+    public ClassicHttpRequest createRequest(String action, JSONObject params) throws UnsupportedEncodingException,
             ConduitAPIException {
         HttpPost post;
         try {
             post = new HttpPost(
                     new URL(new URL(new URL(conduitURL), "/api/"), action).toURI()
             );
-        } catch (MalformedURLException e) {
-            throw new ConduitAPIException(e.getMessage());
-        } catch (URISyntaxException e) {
+        } catch (MalformedURLException | URISyntaxException e) {
             throw new ConduitAPIException(e.getMessage());
         }
 
-        JSONObject conduitParams = new JSONObject();
+		JSONObject conduitParams = new JSONObject();
         conduitParams.put(API_TOKEN_KEY, conduitToken);
         params.put(CONDUIT_METADATA_KEY, conduitParams);
 
-        List<NameValuePair> formData = new ArrayList<NameValuePair>();
+        List<NameValuePair> formData = new ArrayList<>();
         formData.add(new BasicNameValuePair("params", params.toString()));
 
-        UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formData, "UTF-8");
+        UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formData, StandardCharsets.UTF_8);
         post.setEntity(entity);
 
         return post;
