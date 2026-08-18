@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.80</version>
+    <version>6.2221.va_045130417c9</version>
     <relativePath />
   </parent>
 
@@ -34,7 +34,8 @@
     <revision>1.0</revision>
     <changelist>-SNAPSHOT</changelist>
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
-    <jenkins.version>2.452.1</jenkins.version>
+    <jenkins.baseline>2.555</jenkins.baseline>
+    <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
     <spotbugs.skip>true</spotbugs.skip>
@@ -45,7 +46,6 @@
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>checks-api</artifactId>
-      <version>2.2.0</version>
     </dependency>
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
@@ -68,7 +68,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>jacoco</artifactId>
-      <version>3.3.6</version>
+      <version>3.3.7</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -85,13 +85,13 @@
     <dependency>
       <groupId>org.apache.httpcomponents.client5</groupId>
       <artifactId>httpclient5-testing</artifactId>
-      <version>5.2.3</version>
+      <version>5.6.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents.client5</groupId>
       <artifactId>httpclient5</artifactId>
-      <version>5.2.3</version>
+      <version>5.6.4</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
@@ -101,8 +101,8 @@
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.452.x</artifactId>
-        <version>3193.v330d8248d39e</version>
+        <artifactId>bom-${jenkins.baseline}.x</artifactId>
+        <version>6908.vb_4265a_9607c9</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
